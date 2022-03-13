@@ -1,2 +1,203 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Simple Map</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+</head>
+
+<body>
+  <input id="address" type="textbox" value="GeekSalon">
+  　　<input type="button" value="Encode" onclick="codeAddress()">
+  <div id="map"></div>
+  <div class="container">
+    <div class="row">
+      <form>
+        <div class="form-group row">
+          <label for="addressInput" class="col-sm-2 col-form-label">検索場所：</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="addressInput" value="札幌" placeholder="近江市場">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="keywordInput" class="col-sm-2 col-form-label">Keyword:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="keywordInput" value="カフェ" placeholder="寿司">
+          </div>
+        </div>
+
+        <button class="btn-border my-3" type="button" value="Search" onclick="getPlaces();">
+          <%# <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              d="M500.3 443.7l-119.7-119.7c27.22-40.41 40.65-90.9 33.46-144.7C401.8 87.79 326.8 13.32 235.2 1.723C99.01-15.51-15.51 99.01 1.724 235.2c11.6 91.64 86.08 166.7 177.6 178.9c53.8 7.189 104.3-6.236 144.7-33.46l119.7 119.7c15.62 15.62 40.95 15.62 56.57 0C515.9 484.7 515.9 459.3 500.3 443.7zM79.1 208c0-70.58 57.42-128 128-128s128 57.42 128 128c0 70.58-57.42 128-128 128S79.1 278.6 79.1 208z" />
+            </svg> %>
+            <i class="fas fa-search p-2"></i>Search
+        </button>
+      </form>
+    </div>
+
+    <div class="row">
+      <i class="fa-solid fa-mug-saucer"></i>結果<br />
+      <div id="results"
+        style="width: 100%; height: 200px; border: 0px dotted; padding: 10px; overflow-y: scroll; background: white;">
+      </div>
+    </div>
+
+  </div>
+  <script src="https://code.jquery.com/jquery.js"></script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=<%= ENV['SECRET_KEY'] %>&v=weekly&libraries=places"></script>
+  <script type="text/javascript">
+    let placesList;
+    let markers = [];
+    let infoWindow = [];
+    let markerData = [];
+
+    function getPlaces() {
+      document.getElementById("results").innerHTML = "";
+      placesList = new Array();
+
+      //get a value ftom address
+      let addressInput = document.getElementById("addressInput").value;
+      if (addressInput == "") {
+        return;
+      }
+
+      //検索場所の位置情報を取得
+      let geocoder = new google.maps.Geocoder();
+      geocoder.geocode(
+        {
+          address: addressInput
+        },
+        function (results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+            //取得した緯度・経度を使って周辺検索
+            startNearbySearch(results[0].geometry.location);
+            console.log(results[0].geometry.location.lat);
+          }
+          else {
+            alert(addressInput + "：位置情報が取得できませんでした。");
+          }
+        });
+    }
+
+    /*位置情報を使って周辺検索 latLng : 位置座標（google.maps.LatLng）*/
+    function startNearbySearch(latLng) {
+
+      //display 'loading...'
+      document.getElementById("results").innerHTML = "Now Loading...";
+
+      //create a Map instance & center a map by input address
+      let map = new google.maps.Map(
+        document.getElementById("map"), {
+        center: latLng,
+        zoom: 15,
+      });
+
+      //create a PlacesService instance
+      let service = new google.maps.places.PlacesService(map);
+
+      //入力したKeywordを取得
+      let keywordInput = document.getElementById("keywordInput").value;
+
+      //周辺検索
+      service.nearbySearch(
+        {
+          location: latLng,
+          radius: 800,
+          type: ['restaurant'],
+          keyword: keywordInput,
+          language: 'ja'
+        },
+        displayResults
+      );
+    }
+
+    // 周辺検索の結果表示
+    function displayResults(results, status, pagination) {
+
+      if (status == google.maps.places.PlacesServiceStatus.OK) {
+
+        // createMarkers(results);
+        //検索結果をplacesList配列に連結
+        console.log(results);
+        placesList = placesList.concat(results);
+        if (pagination.hasNextPage) {
+          setTimeout(pagination.nextPage(), 1000);
+        } else {
+          let resultHTML = "<ol>";
+          for (let i = 0; i < placesList.length; i++) {
+            place = placesList[i];
+
+            //ratingがないのものは「---」に表示変更
+            let rating = place.rating;
+            if (rating == undefined) rating = "---";
+            let content = "【" + rating + "】 " + place.name + " " + place.vicinity;
+
+            resultHTML += "<li>";
+            resultHTML += content;
+            resultHTML += "</li>";
+          }
+
+          resultHTML += "</ol>";
+
+          //結果表示
+          document.getElementById("results").innerHTML = resultHTML;
+        }
+
+      } else {
+        //エラー表示
+        let results = document.getElementById("results");
+        if (status == google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+          results.innerHTML = "検索結果が0件です。";
+        } else if (status == google.maps.places.PlacesServiceStatus.ERROR) {
+          results.innerHTML = "サーバ接続に失敗しました。";
+        } else if (status == google.maps.places.PlacesServiceStatus.INVALID_REQUEST) {
+          results.innerHTML = "リクエストが無効でした。";
+        } else if (status == google.maps.places.PlacesServiceStatus.OVER_QUERY_LIMIT) {
+          results.innerHTML = "リクエストの利用制限回数を超えました。";
+        } else if (status == google.maps.places.PlacesServiceStatus.REQUEST_DENIED) {
+          results.innerHTML = "サービスが使えない状態でした。";
+        } else if (status == google.maps.places.PlacesServiceStatus.UNKNOWN_ERROR) {
+          results.innerHTML = "原因不明のエラーが発生しました。";
+        }
+
+      }
+    }
+
+    function createMarkers(places) {
+      console.log('Start');
+      places.forEach(place => {
+        let marker = new google.maps.Marker({
+          position: place.geometry.location,
+          setMap: map,
+          title: place.name
+        });
+
+        /* TODO: Step 4B: Add click listeners to the markers */
+
+        // Adjust the map bounds to include the location of this marker
+        bounds.extend(place.geometry.location);
+      });
+      /* Once all the markers have been placed, adjust the bounds of the map to
+      * show all the markers within the visible area. */
+      map.fitBounds(bounds);
+    }
+    //markers
+    // function createMarker(place) {
+    //   if (!place.geometry || !place.geometry.location) return;
+
+    //   marker = new google.maps.Marker({
+    //     setMap: map,
+    //     position: place.geometry.location,
+    //   });
+    //   console.log(marker);
+    //   google.maps.event.addListener(marker, "click", () => {
+    //     infowindow.setContent(place.name || "");
+    //     infowindow.open(map);
+    //   });
+    // }
+  </script>
+</body>
+
+</html>

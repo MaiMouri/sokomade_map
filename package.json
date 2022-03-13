@@ -2,6 +2,7 @@
   "name": "sokomade-map",
   "private": true,
   "dependencies": {
+    "@googlemaps/js-api-loader": "^1.13.7",
     "@popperjs/core": "^2.11.2",
     "@rails/actioncable": "^6.0.0",
     "@rails/activestorage": "^6.0.0",
