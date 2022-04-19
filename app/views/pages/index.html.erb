@@ -278,7 +278,7 @@
             place = placesList[i];
 
             //ratingがないのものは「---」に表示変更
-            let rating = place.rating;
+            let rating = '<i class="far fa-star"></i>' + place.rating;
             if (rating == undefined) rating = "---";
             let content = "【" + rating + "】 " + place.name;
 

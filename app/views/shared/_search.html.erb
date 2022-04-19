@@ -1,14 +1,14 @@
 <div class="container">
-  <div class="row">
+  <div class="row p-4">
     <form>
       <div class="form-group row">
-        <label for="addressInput" class="col-sm-2 col-form-label">検索場所：</label>
+        <label for="addressInput" class="col-sm-2 col-form-label"><i class="fas fa-map-marker-alt me-2"></i>検索場所</label>
         <div class="col-sm-10">
           <input type="text" class="form-control" id="addressInput" value="札幌" placeholder="近江市場">
         </div>
       </div>
       <div class="form-group row">
-        <label for="keywordInput" class="col-sm-2 col-form-label">Keyword:</label>
+        <label for="keywordInput" class="col-sm-2 col-form-label"><i class="fas fa-tag me-2"></i>Keyword</label>
         <div class="col-sm-10">
           <input type="text" class="form-control" id="keywordInput" value="カフェ" placeholder="寿司">
         </div>
@@ -20,8 +20,8 @@
     </form>
   </div>
 
-  <div class="row">
-    <i class="fa-solid fa-mug-saucer"></i>結果<br />
+  <div class="row p-4">
+    <p><i class="fas fa-mug-hot me-2"></i>結果</p>
     <div id="results"
       style="width: 100%; height: 200px; border: 0px dotted; padding: 10px; overflow-y: scroll; background: white;">
     </div>
