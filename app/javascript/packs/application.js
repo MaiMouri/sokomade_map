@@ -16,13 +16,14 @@ import "controllers"
 import "bootstrap"
 import { initMap } from '../map';
 import { test } from "../test";
-// import { loadMap } from "../loader";
+import { loadMap } from "../loader";
 
 
-// document.addEventListener('turbolinks:load', () => {
-//   // initMap();
-//   test();
-// });
+document.addEventListener('turbolinks:load', () => {
+  initMap();
+  loadMap();
+  // test();
+});
 
 // import { initMapbox } from '../plugins/init_mapbox';
 // document.addEventListener('turbolinks:load', () => {

@@ -280,7 +280,7 @@
             //ratingがないのものは「---」に表示変更
             let rating = place.rating;
             if (rating == undefined) rating = "---";
-            let content = "【" + rating + "】 " + place.name + " " + place.place_id;
+            let content = "【" + rating + "】 " + place.name;
 
             resultHTML += "<li>";
             resultHTML += "<a href=\"javascript: void(0);\"";
